@@ -53,4 +53,86 @@ class MqttExistingSessionTest extends MqttTestSupport {
     publish("1/data/apps/crm/Opportunity/60", "2", EXACTLY_ONCE)
     should_receive(body = "2", topic = "1/data/apps/crm/Opportunity/60", c = client2)
   }
+
+  test("Subscribe is remembered on existing sessions, reconnect") {
+    connect()
+    subscribe("existing/sub/reconnect/32")
+
+    // reconnect many times...
+    for (i <- 0 to 31) {
+      disconnect()
+      restart
+      connect()
+    }
+
+    // The subscribe should still be remembered.
+    publish("existing/sub/reconnect", "3", EXACTLY_ONCE)
+    should_receive("3", "existing/sub/reconnect/32")
+  }
+
+  test("Subscribe is remembered on existing sessions, re-subscribe") {
+    connect()
+    subscribe("existing/sub/resubscribe")
+
+    // reconnect many times...
+    for (i <- 0 to 31) {
+      disconnect()
+      restart
+      connect()
+
+      // re-subscribe...
+      subscribe("existing/sub/resubscribe")
+    }
+
+    // The subscribe should still be remembered.
+    publish("existing/sub/resubscribe", "4", EXACTLY_ONCE)
+    should_receive("4", "existing/sub/resubscribe")
+  }
+
+  test("Subscribe, reconnect") {
+
+    connect()
+
+    var client2 = create_client
+    client2.setCleanSession(false);
+    client2.setClientId("another-client")
+    connect(c = client2)
+
+    subscribe(topic = "2/#", c = client2)
+
+    // reconnect many times...
+    for (i <- 0 to 31) {
+      disconnect(c = client2)
+      restart
+      connect(c = client2)
+    }
+
+    publish("2/data/b2c/customer/199181", "4", EXACTLY_ONCE)
+    should_receive(body = "4", topic = "2/data/b2c/customer/199181", c = client2)
+  }
+
+  test("Subscribe, re-subscribe") {
+
+    connect()
+
+    var client2 = create_client
+    client2.setCleanSession(false);
+    client2.setClientId("another-client2")
+    connect(c = client2)
+
+    subscribe(topic = "3/#", c = client2)
+
+    // reconnect many times...
+    for (i <- 0 to 31) {
+      disconnect(c = client2)
+      restart
+      connect(c = client2)
+
+      // re-subscribe...
+      subscribe("3/#", c = client2)
+    }
+
+    publish("3/store/a80", "5", EXACTLY_ONCE)
+    should_receive(body = "5", topic = "3/store/a80", c = client2)
+  }
 }
