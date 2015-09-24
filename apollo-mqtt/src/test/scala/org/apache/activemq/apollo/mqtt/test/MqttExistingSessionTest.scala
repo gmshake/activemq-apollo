@@ -66,7 +66,7 @@ class MqttExistingSessionTest extends MqttTestSupport {
     }
 
     // The subscribe should still be remembered.
-    publish("existing/sub/reconnect", "3", EXACTLY_ONCE)
+    publish("existing/sub/reconnect/32", "3", EXACTLY_ONCE)
     should_receive("3", "existing/sub/reconnect/32")
   }
 
