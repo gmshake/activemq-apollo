@@ -103,7 +103,6 @@ class MqttExistingSessionTest extends MqttTestSupport {
     // reconnect many times...
     for (i <- 0 to 31) {
       disconnect(c = client2)
-      restart
       connect(c = client2)
     }
 
@@ -125,7 +124,6 @@ class MqttExistingSessionTest extends MqttTestSupport {
     // reconnect many times...
     for (i <- 0 to 31) {
       disconnect(c = client2)
-      restart
       connect(c = client2)
 
       // re-subscribe...
